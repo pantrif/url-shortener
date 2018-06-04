@@ -3,7 +3,7 @@ package main
 import "strings"
 
 const ALPHABET = "23456789bcdfghjkmnpqrstvwxyzBCDFGHJKLMNPQRSTVWXYZ-_";
-const BASE = 51;
+const BASE = len(ALPHABET);
 
 func encode(num int64) string {
 	str := ""
