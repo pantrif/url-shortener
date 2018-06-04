@@ -1,5 +1,5 @@
 # url-shortener
-A golang URL Shortener with mysql support.
+A golang URL Shortener with mysql support.  
 Using Bijective conversion between natural numbers (IDs) and short strings
 
 # Installation
@@ -9,8 +9,8 @@ docker-compose up --build
 ```
 ## Using an existing mysql
 
-Edit .env file to add connection strings for mysql
-Run mysql_init/create_table.sql
+Edit .env file to add connection strings for mysql  
+Run mysql_init/create_table.sql  
 ```
 go run main.go
 ```
