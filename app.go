@@ -3,7 +3,7 @@ package main
 import (
     "log"
     "net/http"
-	"database/sql"
+    "database/sql"
     "github.com/gorilla/mux"
 )
 
@@ -15,7 +15,7 @@ type App struct {
 func (a *App) Init() {
 	a.Router.HandleFunc("/", home).Methods("GET")
 	a.Router.HandleFunc("/{hash}", redirect).Methods("GET")
-    a.Router.HandleFunc("/shorten", shorten).Methods("POST")
+        a.Router.HandleFunc("/shorten", shorten).Methods("POST")
  }
 
  func (a *App) Run(port string) {
