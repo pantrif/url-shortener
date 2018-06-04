@@ -1,0 +1,31 @@
+version: "3"
+
+services:
+  go-shortener:
+    image: go-shortener
+    build: ./
+    container_name: go-shortener
+    restart: on-failure
+    ports:
+        - "${EXPOSED_PORT}:8081"
+    links:
+      - mysql
+    depends_on:
+      - mysql
+    env_file:
+       - .env
+
+  mysql:
+     image: mysql:5.7
+     container_name: mysql
+     restart: always
+     volumes:
+       - ./mysql_init:/docker-entrypoint-initdb.d
+     ports:
+          - "3316:3306"
+     env_file:
+        - .env
+     environment:
+         MYSQL_ROOT_PASSWORD: "${DB_PASSWORD}"
+         TIMEZONE: "${DB_TIMEZONE}"
+         MYSQL_DATABASE: "${DATABASE_NAME}"
