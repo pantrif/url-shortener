@@ -19,9 +19,9 @@ go run main.go
 
 ## Create short url
 ```
-curl -X POST -F "url=http://www.google.com" http://localhost:8081/shorten
+curl -X POST -H "Content-Type:application/json" -d "{\"url\": \"http://www.google.com\"}" http://localhost:8081/shorten
 ```
-Output  
+Expected output  
 ```
 {"url":"localhost:8081/3"}
 ```

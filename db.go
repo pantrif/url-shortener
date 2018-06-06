@@ -7,9 +7,8 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 )
 
-var db *sql.DB
-
 func InitDB(datasource string) *sql.DB {
+	var db *sql.DB
 	var err error
 	db, err = sql.Open(datasource, os.Getenv("DB_USER")+":"+ os.Getenv("DB_PASSWORD") +"@tcp(mysql:"+ os.Getenv("DB_PORT") +")/" + os.Getenv("DATABASE_NAME"))
 	if err != nil {

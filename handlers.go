@@ -4,56 +4,57 @@ import (
 	"net/http"
 	"net/url"
 	"github.com/gorilla/mux"
-	"github.com/bitly/go-simplejson"
-	"log"
+	"encoding/json"
 )
 
-func home(w http.ResponseWriter, r *http.Request) {
+type Body struct {
+    Url string
+}
+
+
+func (a *App) Home(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte("Nothing to see here"))
 }
 
-func shorten(w http.ResponseWriter, r *http.Request) {
+func (a *App) Shorten(w http.ResponseWriter, r *http.Request) {
 	var id int64
-	url := r.FormValue("url")
+	var body Body
 
-	json := simplejson.New()
+	decoder := json.NewDecoder(r.Body)
+    if err := decoder.Decode(&body); err != nil {
+		respondWithError(w, http.StatusBadRequest, "Invalid request payload")
+        return
+    }
+	defer r.Body.Close()
+	url := body.Url
 
-	if (!isValidUrl(url)){
-		w.WriteHeader(http.StatusBadRequest)
-		json.Set("error", "Invalid url")
-		sendResponse(json, w)
-		return;
-	}
-
-	db.QueryRow("SELECT id FROM shortened_urls WHERE long_url = ?", url).Scan(&id)
+	a.DB.QueryRow("SELECT id FROM shortened_urls WHERE long_url = ?", url).Scan(&id)
 	if (id == 0){
-		res, err := db.Exec(`INSERT INTO shortened_urls (long_url, created) VALUES(?, now())`, url)
+		res, err := a.DB.Exec(`INSERT INTO shortened_urls (long_url, created) VALUES(?, now())`, url)
 		if err != nil {
-			log.Println("Error:", err.Error())
+			respondWithError(w, http.StatusInternalServerError, err.Error())
+			return
 		}
 		id, _ = res.LastInsertId()
 	}
 	hash := encode(id)
-	json.Set("url", r.Host  + "/" + hash)
-	sendResponse(json, w)
+	body.Url = r.Host  + "/" + hash
+	sendResponse(w, http.StatusOK, body)
 }
 
-func redirect(w http.ResponseWriter, r *http.Request)  {
+func (a *App) Redirect(w http.ResponseWriter, r *http.Request)  {
 	var id int64
 	var long_url string
-
-	json := simplejson.New()
 
 	vars := mux.Vars(r)
 	hash := vars["hash"]
 
 	decoded_id := decode(hash)
-	db.QueryRow("SELECT id, long_url FROM shortened_urls WHERE id = ?", decoded_id).Scan(&id, &long_url)
+	a.DB.QueryRow("SELECT id, long_url FROM shortened_urls WHERE id = ?", decoded_id).
+	Scan(&id, &long_url)
 
 	if (id == 0){
-		w.WriteHeader(http.StatusNotFound)
-		json.Set("error", "Not found")
-		sendResponse(json, w)
+		respondWithError(w, http.StatusNotFound, "Not found")
 		return;
 	}
 	http.Redirect(w, r, long_url, http.StatusSeeOther)
@@ -68,11 +69,14 @@ func isValidUrl(toTest string) bool {
 	}
 }
 
-func sendResponse(json *simplejson.Json, w http.ResponseWriter)  {
+func respondWithError(w http.ResponseWriter, code int, message string) {
+	sendResponse(w, code, map[string]string{"error": message})
+}
+
+func sendResponse(w http.ResponseWriter, code int, payload interface{})  {
+	response, _ := json.Marshal(payload)
+
 	w.Header().Set("Content-Type", "application/json")
-	payload, err := json.MarshalJSON()
-	if err != nil {
-		log.Println(err)
-	}
-	w.Write(payload)
+	w.WriteHeader(code)
+	w.Write(response)
 }
