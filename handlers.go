@@ -1,16 +1,16 @@
 package main
 
 import (
+	"encoding/json"
 	"net/http"
 	"net/url"
+
 	"github.com/gorilla/mux"
-	"encoding/json"
 )
 
 type Body struct {
-    Url string
+	Url string `json:"url"`
 }
-
 
 func (a *App) Home(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte("Nothing to see here"))
@@ -21,15 +21,20 @@ func (a *App) Shorten(w http.ResponseWriter, r *http.Request) {
 	var body Body
 
 	decoder := json.NewDecoder(r.Body)
-    if err := decoder.Decode(&body); err != nil {
+	if err := decoder.Decode(&body); err != nil {
 		respondWithError(w, http.StatusBadRequest, "Invalid request payload")
-        return
-    }
+		return
+	}
 	defer r.Body.Close()
 	url := body.Url
 
+	if !isValidUrl(url) {
+		respondWithError(w, http.StatusBadRequest, "Invalid url")
+		return
+	}
+
 	a.DB.QueryRow("SELECT id FROM shortened_urls WHERE long_url = ?", url).Scan(&id)
-	if (id == 0){
+	if id == 0 {
 		res, err := a.DB.Exec(`INSERT INTO shortened_urls (long_url, created) VALUES(?, now())`, url)
 		if err != nil {
 			respondWithError(w, http.StatusInternalServerError, err.Error())
@@ -38,11 +43,11 @@ func (a *App) Shorten(w http.ResponseWriter, r *http.Request) {
 		id, _ = res.LastInsertId()
 	}
 	hash := encode(id)
-	body.Url = r.Host  + "/" + hash
+	body.Url = r.Host + "/" + hash
 	sendResponse(w, http.StatusOK, body)
 }
 
-func (a *App) Redirect(w http.ResponseWriter, r *http.Request)  {
+func (a *App) Redirect(w http.ResponseWriter, r *http.Request) {
 	var id int64
 	var long_url string
 
@@ -51,11 +56,11 @@ func (a *App) Redirect(w http.ResponseWriter, r *http.Request)  {
 
 	decoded_id := decode(hash)
 	a.DB.QueryRow("SELECT id, long_url FROM shortened_urls WHERE id = ?", decoded_id).
-	Scan(&id, &long_url)
+		Scan(&id, &long_url)
 
-	if (id == 0){
+	if id == 0 {
 		respondWithError(w, http.StatusNotFound, "Not found")
-		return;
+		return
 	}
 	http.Redirect(w, r, long_url, http.StatusSeeOther)
 }
@@ -73,7 +78,7 @@ func respondWithError(w http.ResponseWriter, code int, message string) {
 	sendResponse(w, code, map[string]string{"error": message})
 }
 
-func sendResponse(w http.ResponseWriter, code int, payload interface{})  {
+func sendResponse(w http.ResponseWriter, code int, payload interface{}) {
 	response, _ := json.Marshal(payload)
 
 	w.Header().Set("Content-Type", "application/json")

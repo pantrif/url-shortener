@@ -1,21 +1,26 @@
 package main
 
-import(
-	"net/http/httptest"
-	"testing"
+import (
+	"fmt"
 	"net/http"
+	"net/http/httptest"
+	"strings"
+	"testing"
+
 	"github.com/gorilla/mux"
 	"gopkg.in/DATA-DOG/go-sqlmock.v1"
 )
 
 var a App
 
-func TestMain(t *testing.T) {
+func TestHomeRedirect(t *testing.T) {
 	db, mock, err := sqlmock.New()
 	if err != nil {
 		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
 	}
 	defer db.Close()
+
+	site := "http://www.google.com"
 
 	a = App{}
 	a.Router = mux.NewRouter()
@@ -26,14 +31,13 @@ func TestMain(t *testing.T) {
 
 	assertEqual(t, r.Body.String(), "Nothing to see here")
 	assertEqual(t, r.Code, 200)
-	
+
 	req, _ = http.NewRequest("POST", "/", nil)
 	r = executeRequest(req)
 	assertEqual(t, r.Code, 405)
 
-
 	rows := sqlmock.NewRows([]string{"id", "long_url"}).
-		AddRow(1722946, "http://www.google.com")
+		AddRow(1722946, site)
 
 	mock.ExpectQuery("SELECT id, long_url FROM shortened_urls").WithArgs(1722946).WillReturnRows(rows)
 	req, _ = http.NewRequest("GET", "/hash", nil)
@@ -44,14 +48,57 @@ func TestMain(t *testing.T) {
 	req, _ = http.NewRequest("GET", "/hash", nil)
 	r = executeRequest(req)
 	assertEqual(t, r.Code, 404)
+}
+
+func TestShorten(t *testing.T) {
+	db, mock, err := sqlmock.New()
+	if err != nil {
+		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
+	}
+	defer db.Close()
+
+	site := "http://www.google.com"
+	invalid_site := "trash"
+
+	a = App{}
+	a.Router = mux.NewRouter()
+	a.DB = db
+	a.Init()
+
+	req, _ := http.NewRequest("POST", "/shorten", strings.NewReader(""))
+	r := executeRequest(req)
+	assertEqual(t, r.Code, 400)
+
+	json_req := "{\"url\":\"" + invalid_site + "\"}"
+	req, _ = http.NewRequest("POST", "/shorten", strings.NewReader(json_req))
+	r = executeRequest(req)
+	assertEqual(t, r.Code, 400)
+
+	json_req = "{\"url\":\"" + site + "\"}"
+	mock.ExpectQuery("SELECT id FROM shortened_urls").WithArgs(site).WillReturnRows(sqlmock.NewRows([]string{"id"}))
+	mock.ExpectExec("INSERT INTO shortened_urls").WithArgs(site).WillReturnError(fmt.Errorf("an error occured"))
+	req, _ = http.NewRequest("POST", "/shorten", strings.NewReader(json_req))
+	r = executeRequest(req)
+	assertEqual(t, r.Code, 500)
+
+	json_req = "{\"url\":\"" + site + "\"}"
+
+	rows := sqlmock.NewRows([]string{"id"}).AddRow(1722946)
+	mock.ExpectQuery("SELECT id FROM shortened_urls").WithArgs(site).WillReturnRows(rows)
+	mock.ExpectExec("INSERT INTO shortened_urls").WithArgs(site).WillReturnResult(sqlmock.NewResult(1, 1))
+	req, _ = http.NewRequest("POST", "/shorten", strings.NewReader(json_req))
+	r = executeRequest(req)
+	assertEqual(t, r.Body.String(), "{\"url\":\"/g_sh\"}")
+	assertEqual(t, r.Code, 200)
 
 }
 
 func executeRequest(req *http.Request) *httptest.ResponseRecorder {
-    rr := httptest.NewRecorder()
-    a.Router.ServeHTTP(rr, req)
+	req.Header.Set("Content-Type", "application/json")
+	rr := httptest.NewRecorder()
+	a.Router.ServeHTTP(rr, req)
 
-    return rr
+	return rr
 }
 
 func assertEqual(t *testing.T, a interface{}, b interface{}) {
