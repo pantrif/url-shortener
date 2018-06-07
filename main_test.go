@@ -1,4 +1,4 @@
-package main_test
+package main
 
 import(
 	"net/http/httptest"
@@ -6,10 +6,9 @@ import(
 	"net/http"
 	"github.com/gorilla/mux"
 	"gopkg.in/DATA-DOG/go-sqlmock.v1"
-	"."
 )
 
-var a main.App
+var a App
 
 func TestMain(t *testing.T) {
 	db, mock, err := sqlmock.New()
@@ -18,7 +17,7 @@ func TestMain(t *testing.T) {
 	}
 	defer db.Close()
 
-	a = main.App{}
+	a = App{}
 	a.Router = mux.NewRouter()
 	a.DB = db
 	a.Init()
