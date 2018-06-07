@@ -1,3 +1,6 @@
+[![Build Status](https://travis-ci.com/pantrif/url-shortener.svg?branch=master)](https://travis-ci.com/pantrif/url-shortener)
+[![codecov](https://codecov.io/gh/pantrif/url-shortener/branch/master/graph/badge.svg)](https://codecov.io/gh/pantrif/url-shortener)
+
 # url-shortener
 A golang URL Shortener with mysql support.  
 Using Bijective conversion between natural numbers (IDs) and short strings
