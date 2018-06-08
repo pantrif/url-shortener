@@ -1,4 +1,5 @@
 [![Build Status](https://travis-ci.com/pantrif/url-shortener.svg?branch=master)](https://travis-ci.com/pantrif/url-shortener)
++[![Go Report Card](https://goreportcard.com/badge/github.com/pantrif/url-shortener)](https://goreportcard.com/report/github.com/pantrif/url-shortener)
 [![codecov](https://codecov.io/gh/pantrif/url-shortener/branch/master/graph/badge.svg)](https://codecov.io/gh/pantrif/url-shortener)
 
 # url-shortener
