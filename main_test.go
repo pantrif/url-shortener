@@ -6,7 +6,8 @@ import (
 	"net/http/httptest"
 	"strings"
 	"testing"
-	"url-shortener/shortener"
+
+	"github.com/pantrif/url-shortener/shortener"
 
 	"github.com/gorilla/mux"
 	"gopkg.in/DATA-DOG/go-sqlmock.v1"
