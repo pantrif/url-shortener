@@ -36,9 +36,9 @@ func (a *App) Shorten(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	a.DB.QueryRow("SELECT id FROM shortened_urls WHERE longURL = ?", url).Scan(&id)
+	a.DB.QueryRow("SELECT id FROM shortened_urls WHERE long_url = ?", url).Scan(&id)
 	if id == 0 {
-		res, err := a.DB.Exec(`INSERT INTO shortened_urls (longURL, created) VALUES(?, now())`, url)
+		res, err := a.DB.Exec(`INSERT INTO shortened_urls (long_url, created) VALUES(?, now())`, url)
 		if err != nil {
 			respondWithError(w, http.StatusInternalServerError, err.Error())
 			return
@@ -59,7 +59,7 @@ func (a *App) Redirect(w http.ResponseWriter, r *http.Request) {
 	hash := vars["hash"]
 
 	decodedID := decode(hash)
-	a.DB.QueryRow("SELECT id, longURL FROM shortened_urls WHERE id = ?", decodedID).
+	a.DB.QueryRow("SELECT id, long_url FROM shortened_urls WHERE id = ?", decodedID).
 		Scan(&id, &longURL)
 
 	if id == 0 {
