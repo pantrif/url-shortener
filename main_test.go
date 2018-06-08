@@ -6,12 +6,13 @@ import (
 	"net/http/httptest"
 	"strings"
 	"testing"
+	"url-shortener/shortener"
 
 	"github.com/gorilla/mux"
 	"gopkg.in/DATA-DOG/go-sqlmock.v1"
 )
 
-var a App
+var a shortener.App
 
 func TestHomeRedirect(t *testing.T) {
 	db, mock, err := sqlmock.New()
@@ -22,7 +23,7 @@ func TestHomeRedirect(t *testing.T) {
 
 	site := "http://www.google.com"
 
-	a = App{}
+	a = shortener.App{}
 	a.Router = mux.NewRouter()
 	a.DB = db
 	a.Init()
@@ -60,7 +61,7 @@ func TestShorten(t *testing.T) {
 	site := "http://www.google.com"
 	invalidSite := "trash"
 
-	a = App{}
+	a = shortener.App{}
 	a.Router = mux.NewRouter()
 	a.DB = db
 	a.Init()
