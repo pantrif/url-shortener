@@ -76,7 +76,7 @@ func TestShorten(t *testing.T) {
 
 	jsonReq = "{\"url\":\"" + site + "\"}"
 	mock.ExpectQuery("SELECT id FROM shortened_urls").WithArgs(site).WillReturnRows(sqlmock.NewRows([]string{"id"}))
-	mock.ExpectExec("INSERT INTO shortened_urls").WithArgs(site).WillReturnError(fmt.Errorf("an error occured"))
+	mock.ExpectExec("INSERT INTO shortened_urls").WithArgs(site).WillReturnError(fmt.Errorf("an error occurred"))
 	req, _ = http.NewRequest("POST", "/shorten", strings.NewReader(jsonReq))
 	r = executeRequest(req)
 	assertEqual(t, r.Code, 500)
