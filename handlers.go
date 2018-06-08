@@ -8,14 +8,17 @@ import (
 	"github.com/gorilla/mux"
 )
 
+//Body is the response body
 type Body struct {
-	Url string `json:"url"`
+	URL string `json:"url"`
 }
 
+//Home page
 func (a *App) Home(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte("Nothing to see here"))
 }
 
+//Shorten url POST method
 func (a *App) Shorten(w http.ResponseWriter, r *http.Request) {
 	var id int64
 	var body Body
@@ -26,16 +29,16 @@ func (a *App) Shorten(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	defer r.Body.Close()
-	url := body.Url
+	url := body.URL
 
-	if !isValidUrl(url) {
+	if !isValidURL(url) {
 		respondWithError(w, http.StatusBadRequest, "Invalid url")
 		return
 	}
 
-	a.DB.QueryRow("SELECT id FROM shortened_urls WHERE long_url = ?", url).Scan(&id)
+	a.DB.QueryRow("SELECT id FROM shortened_urls WHERE longURL = ?", url).Scan(&id)
 	if id == 0 {
-		res, err := a.DB.Exec(`INSERT INTO shortened_urls (long_url, created) VALUES(?, now())`, url)
+		res, err := a.DB.Exec(`INSERT INTO shortened_urls (longURL, created) VALUES(?, now())`, url)
 		if err != nil {
 			respondWithError(w, http.StatusInternalServerError, err.Error())
 			return
@@ -43,35 +46,36 @@ func (a *App) Shorten(w http.ResponseWriter, r *http.Request) {
 		id, _ = res.LastInsertId()
 	}
 	hash := encode(id)
-	body.Url = r.Host + "/" + hash
+	body.URL = r.Host + "/" + hash
 	sendResponse(w, http.StatusOK, body)
 }
 
+//Redirect route
 func (a *App) Redirect(w http.ResponseWriter, r *http.Request) {
 	var id int64
-	var long_url string
+	var longURL string
 
 	vars := mux.Vars(r)
 	hash := vars["hash"]
 
-	decoded_id := decode(hash)
-	a.DB.QueryRow("SELECT id, long_url FROM shortened_urls WHERE id = ?", decoded_id).
-		Scan(&id, &long_url)
+	decodedID := decode(hash)
+	a.DB.QueryRow("SELECT id, longURL FROM shortened_urls WHERE id = ?", decodedID).
+		Scan(&id, &longURL)
 
 	if id == 0 {
 		respondWithError(w, http.StatusNotFound, "Not found")
 		return
 	}
-	http.Redirect(w, r, long_url, http.StatusSeeOther)
+	http.Redirect(w, r, longURL, http.StatusSeeOther)
 }
 
-func isValidUrl(toTest string) bool {
+func isValidURL(toTest string) bool {
 	_, err := url.ParseRequestURI(toTest)
 	if err != nil {
 		return false
-	} else {
-		return true
 	}
+	return true
+
 }
 
 func respondWithError(w http.ResponseWriter, code int, message string) {

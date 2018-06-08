@@ -2,6 +2,7 @@ package main
 
 import (
 	"os"
+
 	"github.com/gorilla/mux"
 )
 
@@ -10,6 +11,5 @@ func main() {
 	a.DB = InitDB("mysql")
 	a.Router = mux.NewRouter()
 	a.Init()
-	a.Run(":"+os.Getenv("EXPOSED_PORT"))
+	a.Run(":" + os.Getenv("EXPOSED_PORT"))
 }
-
