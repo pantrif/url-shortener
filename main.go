@@ -2,7 +2,8 @@ package main
 
 import (
 	"os"
-	"url-shortener/shortener"
+
+	"github.com/pantrif/url-shortener/shortener"
 
 	"github.com/gorilla/mux"
 )
