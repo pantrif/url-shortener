@@ -1,5 +1,6 @@
 [![Build Status](https://travis-ci.com/pantrif/url-shortener.svg?branch=master)](https://travis-ci.com/pantrif/url-shortener)
 [![Go Report Card](https://goreportcard.com/badge/github.com/pantrif/url-shortener)](https://goreportcard.com/report/github.com/pantrif/url-shortener)
+[![GoDoc](https://godoc.org/github.com/pantrif/url-shortener?status.png)](http://godoc.org/github.com/pantrif/url-shortener)
 
 # url-shortener
 A golang URL Shortener with mysql support.  
