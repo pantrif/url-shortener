@@ -11,8 +11,5 @@ git:
 notifications:
   email: false
 
-install:
-  - go get github.com/json-iterator/go/assert
-
 script:
   - go test ./... -v -race # Run all the tests with the race detector enabled

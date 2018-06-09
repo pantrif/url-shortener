@@ -6,7 +6,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/json-iterator/go/assert"
 	"github.com/pantrif/url-shortener/shortener"
 )
 
@@ -26,5 +25,11 @@ func TestMain(t *testing.T) {
 	if err != nil {
 		panic(err)
 	}
-	assert.Equal(t, http.StatusOK, resp.StatusCode)
+	assertEqual(t, http.StatusOK, resp.StatusCode)
+}
+
+func assertEqual(t *testing.T, a interface{}, b interface{}) {
+	if a != b {
+		t.Fatalf("%s != %s", a, b)
+	}
 }
