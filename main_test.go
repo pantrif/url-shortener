@@ -19,7 +19,7 @@ func TestMain(t *testing.T) {
 		Timeout: 1 * time.Second,
 	}
 
-	r, _ := http.NewRequest("GET", "http://localhost:8081/", nil)
+	r, _ := http.NewRequest("GET", "http://127.0.0.1:8081/", nil)
 
 	resp, err := client.Do(r)
 	if err != nil {
