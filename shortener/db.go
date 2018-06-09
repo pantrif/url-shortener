@@ -5,6 +5,7 @@ import (
 	"log"
 	"os"
 
+	// Add mysql driver
 	_ "github.com/go-sql-driver/mysql"
 )
 
