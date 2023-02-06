@@ -1,11 +1,9 @@
-FROM golang:1.9-alpine
+FROM golang:1.19-alpine
 
-WORKDIR /go/src/url-shortener
-RUN apk --no-cache add curl git && \
-    curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
+WORKDIR /
 
 COPY . .
-RUN dep ensure
+RUN go mod download
 
 RUN go build -o url-shortener
-CMD /go/src/url-shortener/url-shortener
+CMD /url-shortener

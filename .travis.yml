@@ -3,7 +3,7 @@ language: go
 
 
 go:
-  - 1.9.x
+  - 1.19.x
 
 git:
   depth: 1
